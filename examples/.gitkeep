@@ -1,0 +1,11 @@
+# Example fixtures
+
+Sample tournament data for each format. See [`formats/`](../formats/) for the schema each example validates against.
+
+Coming soon:
+- round-robin-4-chess.json
+- round-robin-8-tennis.json
+- single-elimination-8-tennis.json
+- double-elimination-16-esports.json
+- swiss-32-chess.json
+- groups-playoff-16-football.json

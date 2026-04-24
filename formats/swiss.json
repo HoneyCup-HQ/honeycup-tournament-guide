@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/HoneyCup-HQ/honeycup-tournament-guide/formats/swiss.json",
+  "title": "Swiss System Tournament",
+  "description": "Pair players with similar scores each round. No eliminations. Fixed number of rounds regardless of participant count.",
+  "type": "object",
+  "required": ["format", "participants", "rounds", "matches"],
+  "properties": {
+    "format": { "const": "swiss" },
+    "participants": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 512,
+      "items": {
+        "type": "object",
+        "required": ["id", "name"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "seed": { "type": "integer", "minimum": 1 },
+          "rating": { "type": "number", "description": "Elo or similar rating used for initial seeding" }
+        }
+      }
+    },
+    "rounds": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Typically ceil(log2(N)). 16 players → 4 rounds, 32 → 5, 64 → 6."
+    },
+    "matches": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["round", "participantA", "participantB"],
+        "properties": {
+          "round": { "type": "integer", "minimum": 1 },
+          "participantA": { "type": "string" },
+          "participantB": { "type": ["string", "null"], "description": "null = bye; participantA gets 1 point" },
+          "scoreA": { "type": "number" },
+          "scoreB": { "type": "number" },
+          "status": {
+            "enum": ["scheduled", "in-progress", "completed", "walkover", "bye"]
+          }
+        }
+      }
+    },
+    "pairing": {
+      "type": "object",
+      "properties": {
+        "method": {
+          "enum": ["dutch", "monrad", "accelerated"],
+          "description": "Dutch = standard Swiss; Monrad = simplified; Accelerated = top players meet early"
+        },
+        "avoidRematch": { "type": "boolean", "default": true },
+        "colorBalance": {
+          "type": "boolean",
+          "default": true,
+          "description": "Chess: alternate white/black where possible"
+        }
+      }
+    },
+    "tiebreakers": {
+      "type": "array",
+      "items": {
+        "enum": ["buchholz", "buchholz-cut1", "sonneborn-berger", "cumulative", "direct-match", "rating-performance"]
+      },
+      "description": "Applied in order. Buchholz = sum of opponents' final scores."
+    },
+    "scoring": {
+      "type": "object",
+      "properties": {
+        "win": { "type": "number", "default": 1 },
+        "draw": { "type": "number", "default": 0.5 },
+        "loss": { "type": "number", "default": 0 },
+        "bye": { "type": "number", "default": 1 }
+      }
+    }
+  },
+  "examples": [
+    {
+      "format": "swiss",
+      "participants": [
+        { "id": "p1", "name": "Alice", "rating": 1800 },
+        { "id": "p2", "name": "Bob", "rating": 1650 },
+        { "id": "p3", "name": "Carol", "rating": 1500 },
+        { "id": "p4", "name": "Dave", "rating": 1400 }
+      ],
+      "rounds": 2,
+      "matches": [
+        { "round": 1, "participantA": "p1", "participantB": "p3", "scoreA": 1, "scoreB": 0, "status": "completed" },
+        { "round": 1, "participantA": "p2", "participantB": "p4", "scoreA": 0.5, "scoreB": 0.5, "status": "completed" },
+        { "round": 2, "participantA": "p1", "participantB": "p2", "status": "scheduled" },
+        { "round": 2, "participantA": "p3", "participantB": "p4", "status": "scheduled" }
+      ],
+      "pairing": { "method": "dutch", "avoidRematch": true, "colorBalance": true },
+      "tiebreakers": ["buchholz", "sonneborn-berger", "direct-match"]
+    }
+  ]
+}

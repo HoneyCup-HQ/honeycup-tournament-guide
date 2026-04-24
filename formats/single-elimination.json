@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/HoneyCup-HQ/honeycup-tournament-guide/formats/single-elimination.json",
+  "title": "Single Elimination Tournament (Playoff)",
+  "description": "Classic knockout bracket. One loss and you're out. Total matches = N - 1 for N participants (with no byes).",
+  "type": "object",
+  "required": ["format", "participants", "bracket"],
+  "properties": {
+    "format": { "const": "single-elimination" },
+    "participants": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 256,
+      "items": {
+        "type": "object",
+        "required": ["id", "name"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "seed": { "type": "integer", "minimum": 1 }
+        }
+      }
+    },
+    "bracketSize": {
+      "type": "integer",
+      "description": "Next power of 2 >= participants count. Byes fill remaining slots.",
+      "enum": [2, 4, 8, 16, 32, 64, 128, 256]
+    },
+    "bracket": {
+      "type": "array",
+      "description": "Matches organized by round. Round 1 = first matches, round ceil(log2(bracketSize)) = final.",
+      "items": {
+        "type": "object",
+        "required": ["round", "matchIndex"],
+        "properties": {
+          "round": { "type": "integer", "minimum": 1 },
+          "matchIndex": { "type": "integer", "minimum": 0 },
+          "participantA": { "type": ["string", "null"], "description": "null = bye or TBD" },
+          "participantB": { "type": ["string", "null"] },
+          "scoreA": { "type": "number" },
+          "scoreB": { "type": "number" },
+          "winnerId": { "type": ["string", "null"] },
+          "nextMatchIndex": { "type": "integer", "description": "Advance winner to this matchIndex in next round" },
+          "status": {
+            "enum": ["pending", "scheduled", "in-progress", "completed", "walkover"]
+          }
+        }
+      }
+    },
+    "seedingMethod": {
+      "enum": ["sequential", "standard", "random", "custom"],
+      "description": "sequential: 1v2,3v4,...; standard: 1vN,2v(N-1),...; random: shuffle; custom: provided by organizer"
+    }
+  },
+  "examples": [
+    {
+      "format": "single-elimination",
+      "participants": [
+        { "id": "p1", "name": "Alice", "seed": 1 },
+        { "id": "p2", "name": "Bob", "seed": 2 },
+        { "id": "p3", "name": "Carol", "seed": 3 },
+        { "id": "p4", "name": "Dave", "seed": 4 }
+      ],
+      "bracketSize": 4,
+      "bracket": [
+        { "round": 1, "matchIndex": 0, "participantA": "p1", "participantB": "p4", "nextMatchIndex": 0, "status": "scheduled" },
+        { "round": 1, "matchIndex": 1, "participantA": "p2", "participantB": "p3", "nextMatchIndex": 0, "status": "scheduled" },
+        { "round": 2, "matchIndex": 0, "participantA": null, "participantB": null, "status": "pending" }
+      ],
+      "seedingMethod": "standard"
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/HoneyCup-HQ/honeycup-tournament-guide/formats/round-robin.json",
+  "title": "Round Robin Tournament",
+  "description": "Every participant plays every other participant once. Winner determined by standings.",
+  "type": "object",
+  "required": ["format", "participants", "matches"],
+  "properties": {
+    "format": { "const": "round-robin" },
+    "participants": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 128,
+      "items": {
+        "type": "object",
+        "required": ["id", "name"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "seed": { "type": "integer", "minimum": 1 }
+        }
+      }
+    },
+    "matches": {
+      "type": "array",
+      "description": "For N participants, total matches = N * (N-1) / 2",
+      "items": {
+        "type": "object",
+        "required": ["round", "participantA", "participantB"],
+        "properties": {
+          "round": { "type": "integer", "minimum": 1 },
+          "participantA": { "type": "string" },
+          "participantB": { "type": "string" },
+          "scoreA": { "type": "number" },
+          "scoreB": { "type": "number" },
+          "status": {
+            "enum": ["scheduled", "in-progress", "completed", "walkover"]
+          }
+        }
+      }
+    },
+    "standings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["participantId", "points", "wins", "losses"],
+        "properties": {
+          "participantId": { "type": "string" },
+          "points": { "type": "number" },
+          "wins": { "type": "integer", "minimum": 0 },
+          "draws": { "type": "integer", "minimum": 0 },
+          "losses": { "type": "integer", "minimum": 0 },
+          "buchholz": { "type": "number", "description": "Sum of opponents' scores (chess)" },
+          "sonnebornBerger": { "type": "number", "description": "Weighted opponent scores (chess)" }
+        }
+      }
+    },
+    "scoring": {
+      "type": "object",
+      "properties": {
+        "win": { "type": "number", "default": 1 },
+        "draw": { "type": "number", "default": 0.5 },
+        "loss": { "type": "number", "default": 0 },
+        "tiebreakers": {
+          "type": "array",
+          "items": {
+            "enum": ["direct-match", "buchholz", "sonneborn-berger", "points-ratio", "points-diff"]
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "format": "round-robin",
+      "participants": [
+        { "id": "p1", "name": "Alice", "seed": 1 },
+        { "id": "p2", "name": "Bob", "seed": 2 },
+        { "id": "p3", "name": "Carol", "seed": 3 },
+        { "id": "p4", "name": "Dave", "seed": 4 }
+      ],
+      "matches": [
+        { "round": 1, "participantA": "p1", "participantB": "p4", "scoreA": 6, "scoreB": 3, "status": "completed" },
+        { "round": 1, "participantA": "p2", "participantB": "p3", "scoreA": 6, "scoreB": 4, "status": "completed" },
+        { "round": 2, "participantA": "p1", "participantB": "p3", "status": "scheduled" },
+        { "round": 2, "participantA": "p2", "participantB": "p4", "status": "scheduled" },
+        { "round": 3, "participantA": "p1", "participantB": "p2", "status": "scheduled" },
+        { "round": 3, "participantA": "p3", "participantB": "p4", "status": "scheduled" }
+      ],
+      "scoring": {
+        "win": 1,
+        "draw": 0.5,
+        "loss": 0,
+        "tiebreakers": ["direct-match", "buchholz"]
+      }
+    }
+  ]
+}
